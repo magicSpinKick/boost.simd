@@ -87,13 +87,13 @@ namespace boost { namespace simd
       z1 = fma(z1, z*x, x);
       if(bx_larger_05)
       {
-        z1 = z1+z1;
+        z1 += z1;
         z1 = Pio_2<A0>()-z1;
       }
       return bitwise_xor(z1, sign);
     }
 
-    static BOOST_FORCEINLINE A0 acos(const  A0& a0) BOOST_NOEXCEPT
+    static BOOST_FORCEINLINE A0 acos(A0 a0) BOOST_NOEXCEPT
     {
       if (a0 < Mhalf<A0>())
         return Pi<A0>()-asin( sqrt(inc(a0)*Half<A0>()))*Two<A0>();

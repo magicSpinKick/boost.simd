@@ -85,7 +85,7 @@ namespace boost { namespace simd { namespace ext
     BOOST_FORCEINLINE A0 operator() (const fast_tag &,  A0 a0, A0 a1) const BOOST_NOEXCEPT
     {
       A0 z = detail::invtrig_base<A0,tag::radian_tag, tag::not_simd_type>::kernel_atan(a0/a1);
-      return if_else(is_positive(a1), z, Pi<A0>()-z)*signnz(a0);
+      return (is_positive(a1)? z : Pi<A0>()-z)*signnz(a0);
     }
   };
 } } }

@@ -70,6 +70,23 @@ namespace boost { namespace simd { namespace ext
       }
    };
 
+  BOOST_DISPATCH_OVERLOAD ( atan2_
+                          , (typename A0, typename X)
+                          , bd::cpu_
+                          , bs::fast_tag
+                          , bs::pack_< bd::floating_<A0>, X >
+                          , bs::pack_< bd::floating_<A0>, X >
+                          )
+  {
+    BOOST_FORCEINLINE A0 operator() (const fast_tag &,  A0 a0, A0 a1) const BOOST_NOEXCEPT
+    {
+      A0 z = detail::invtrig_base<A0,tag::radian_tag, tag::simd_type>::kernel_atan(a0/a1);
+      z = bs::negatenz(bs::if_else(bs::is_gtz(a1), z, bs::Pi<A0>()-z), a0);
+      return  bs::if_else( bs::is_eqz(a0),
+                           bs::if_else_zero( bs::is_ltz(a1),  bs::Pi<A0>()),
+                           z);
+    }
+  };
 } } }
 
 #endif

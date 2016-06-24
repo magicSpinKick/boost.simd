@@ -54,7 +54,7 @@ namespace boost { namespace simd
   template < class A0 >
   struct invtrig_base<A0,tag::radian_tag,tag::simd_type, float>
   {
-    static inline A0 asin(const A0 a0)
+    static inline A0 asin(const A0& a0)
     {
       A0 sign, x;
       x = bs::abs(a0);
