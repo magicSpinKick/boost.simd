@@ -50,7 +50,7 @@ namespace boost { namespace simd { namespace ext
     BOOST_FORCEINLINE A0 operator() (const fast_tag &,  A0 const& a0) const BOOST_NOEXCEPT
     {
       A0 z = Pio_2<A0>()-bs::asin(a0);
-      return z+Pio_2lo<A0>();
+      return z+Real<A0, 0x3c91a62633145c00ull, 0xb42eef48ul>(); //Pio_2lo<A0>();
     }
   };
 } } }

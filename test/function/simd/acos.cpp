@@ -9,6 +9,7 @@
 //==================================================================================================
 #include <simd_test.hpp>
 #include <boost/simd/function/acos.hpp>
+#include <boost/simd/function/ldexp.hpp>
 #include <boost/simd/pack.hpp>
 #include <boost/simd/function/std.hpp>
 
@@ -39,5 +40,13 @@ STF_CASE_TPL("Check acos on pack" , STF_IEEE_TYPES)
   test<T, N>($);
   test<T, N/2>($);
   test<T, N*2>($);
+  std::cout <<  std::setprecision(20) << bs::ldexp(13176796.0f, -23) << std::endl;
+  std::cout <<  bs::ldexp(-11464520.0f, -46) << std::endl;
+  std::cout <<  std::setprecision(20) << bs::ldexp(7074237752028440.0, -52) << std::endl;
+  std::cout <<  bs::ldexp(4967757600021504.0, -106) << std::endl;
+
 }
 
+// 13176796 2^-23   7074237752028440 2^-52
+
+// -11464520 2^-46 4967757600021504 2^-106
