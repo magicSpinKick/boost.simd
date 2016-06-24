@@ -6,34 +6,22 @@
 //                            http://www.boost.org/LICENSE_1_0.txt
 // -------------------------------------------------------------------------------------------------
 
-#include <ns.bench.hpp>
+#include <simd_bench.hpp>
 #include <boost/simd/function/simd/asin.hpp>
 #include <boost/simd/pack.hpp>
 #include <cmath>
 
-namespace bs = boost::simd;
 namespace nsb = ns::bench;
+namespace bs =  boost::simd;
+DEFINE_SIMD_BENCH(simd_asin, boost::simd::asin);
+DEFINE_SCALAR_BENCH(scalar_asin, boost::simd::asin);
+DEFINE_SCALAR_BENCH(std_scalar_asin, bs::std_(boost::simd::asin));
 
-template <typename T>
-struct asin_simd
-{
-   template <typename U>
-   void operator()(U min0, U max0)
-   {
-     using pack_t = bs::pack<T>;
-     using ret_type = bs::pack<T>;
-     nsb::make_function_experiment_cpe_sized_<pack_t::static_size>
-       ( [](const pack_t & x0) -> ret_type
-         { return bs::asin(x0); }
-       , nsb::generators::rand<pack_t>(min0, max0)
-       );
-   }
-};
-
-
-int main(int argc, char **argv) {
-   nsb::parse_args(argc, argv);
-   nsb::make_for_each<asin_simd, NS_BENCH_IEEE_TYPES>( -1,  1);
-   return 0;
+int main(int argc, char** argv) {
+  nsb::parse_args(argc, argv);
+  nsb::for_each<simd_asin, NS_BENCH_IEEE_TYPES>(-1, 1);
+  nsb::for_each<scalar_asin, NS_BENCH_IEEE_TYPES>(-1, 1);
+  nsb::for_each<std_scalar_asin, NS_BENCH_IEEE_TYPES>(-1, 1);
+  print_results();
+  return 0;
 }
-

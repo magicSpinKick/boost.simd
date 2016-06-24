@@ -6,34 +6,22 @@
 //                            http://www.boost.org/LICENSE_1_0.txt
 // -------------------------------------------------------------------------------------------------
 
-#include <ns.bench.hpp>
+#include <simd_bench.hpp>
 #include <boost/simd/function/simd/atan.hpp>
 #include <boost/simd/pack.hpp>
 #include <cmath>
 
-namespace bs = boost::simd;
 namespace nsb = ns::bench;
+namespace bs =  boost::simd;
+DEFINE_SIMD_BENCH(simd_atan, boost::simd::atan);
+DEFINE_SCALAR_BENCH(scalar_atan, boost::simd::atan);
+DEFINE_SCALAR_BENCH(std_scalar_atan, bs::std_(boost::simd::atan));
 
-template <typename T>
-struct atan_simd
-{
-   template <typename U>
-   void operator()(U min0, U max0)
-   {
-     using pack_t = bs::pack<T>;
-     using ret_type = bs::pack<T>;
-     nsb::make_function_experiment_cpe_sized_<pack_t::static_size>
-       ( [](const pack_t & x0) -> ret_type
-         { return bs::atan(x0); }
-       , nsb::generators::rand<pack_t>(min0, max0)
-       );
-   }
-};
-
-
-int main(int argc, char **argv) {
-   nsb::parse_args(argc, argv);
-   nsb::make_for_each<atan_simd, NS_BENCH_IEEE_TYPES>( -10,  10);
-   return 0;
+int main(int argc, char** argv) {
+  nsb::parse_args(argc, argv);
+  nsb::for_each<simd_atan, NS_BENCH_IEEE_TYPES>(-10, 10);
+  nsb::for_each<scalar_atan, NS_BENCH_IEEE_TYPES>(-10, 10);
+  nsb::for_each<std_scalar_atan, NS_BENCH_IEEE_TYPES>(-10, 10);
+  print_results();
+  return 0;
 }
-
