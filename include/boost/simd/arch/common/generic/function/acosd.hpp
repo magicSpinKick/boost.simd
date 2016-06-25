@@ -44,7 +44,6 @@ namespace boost { namespace simd { namespace ext
   {
     BOOST_FORCEINLINE A0 operator() ( const fast_tag &, A0 const& a0) const BOOST_NOEXCEPT
     {
-//      return /*Constant<A0, 90>()-*/asind(a0);
       return A0(90)-asind(a0);
     }
   };

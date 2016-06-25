@@ -13,7 +13,9 @@
 #define BOOST_SIMD_ARCH_COMMON_GENERIC_FUNCTION_ACOSPI_HPP_INCLUDED
 
 #include <boost/simd/constant/invpi.hpp>
+#include <boost/simd/constant/half.hpp>
 #include <boost/simd/function/acos.hpp>
+#include <boost/simd/function/asinpi.hpp>
 #include <boost/simd/function/multiplies.hpp>
 #include <boost/simd/detail/dispatch/function/overload.hpp>
 #include <boost/config.hpp>
@@ -31,6 +33,19 @@ namespace boost { namespace simd { namespace ext
     BOOST_FORCEINLINE A0 operator() ( A0 const& a0) const BOOST_NOEXCEPT
     {
       return Invpi<A0>()*acos(a0);
+    }
+  };
+
+  BOOST_DISPATCH_OVERLOAD ( acospi_
+                          , (typename A0)
+                          , bd::cpu_
+                          , bs::fast_tag
+                          , bd::generic_< bd::floating_<A0> >
+                          )
+  {
+    BOOST_FORCEINLINE A0 operator() ( const fast_tag &, A0 const& a0) const BOOST_NOEXCEPT
+    {
+      return Half<A0>()-asinpi(a0);
     }
   };
 } } }

@@ -7,18 +7,24 @@
 ## -------------------------------------------------------------------------------------------------
 
 set(SOURCES
+  abs.cpp
   acos.cpp
-  asin.cpp
-  atan.cpp
-  exp.cpp
-  exp10.cpp
-  exp2.cpp
-  expm1.cpp
-  fast_acos.cpp
-  log.cpp
-  log1p.cpp
-  log10.cpp
-  log2.cpp
+  acosd.cpp
+  acospi.cpp
+
+##  asin.cpp
+##  atan.cpp
+##  exp.cpp
+##  exp10.cpp
+##  exp2.cpp
+##  expm1.cpp
+##  fast_acos.cpp
+##  fast_acosd.cpp
+##  log.cpp
+##  log1p.cpp
+##  log10.cpp
+##  log2.cpp
+##  std_acos.cpp
  )
 
 make_exhaustive("function.simd" ${SOURCES})
