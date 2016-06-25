@@ -12,7 +12,9 @@
 #ifndef BOOST_SIMD_ARCH_COMMON_GENERIC_FUNCTION_ACOSD_HPP_INCLUDED
 #define BOOST_SIMD_ARCH_COMMON_GENERIC_FUNCTION_ACOSD_HPP_INCLUDED
 
+#include <boost/simd/constant/constant.hpp>
 #include <boost/simd/function/simd/acos.hpp>
+#include <boost/simd/function/simd/asind.hpp>
 #include <boost/simd/function/simd/indeg.hpp>
 #include <boost/simd/detail/dispatch/function/overload.hpp>
 #include <boost/config.hpp>
@@ -30,6 +32,20 @@ namespace boost { namespace simd { namespace ext
     BOOST_FORCEINLINE A0 operator() ( A0 const& a0) const BOOST_NOEXCEPT
     {
       return indeg(acos(a0));
+    }
+  };
+
+  BOOST_DISPATCH_OVERLOAD ( acosd_
+                          , (typename A0)
+                          , bd::cpu_
+                          , bs::fast_tag
+                          , bd::generic_< bd::floating_<A0> >
+                          )
+  {
+    BOOST_FORCEINLINE A0 operator() ( const fast_tag &, A0 const& a0) const BOOST_NOEXCEPT
+    {
+//      return /*Constant<A0, 90>()-*/asind(a0);
+      return A0(90)-asind(a0);
     }
   };
 } } }

@@ -14,9 +14,8 @@
 
 #include <boost/simd/constant/radindeg.hpp>
 #include <boost/simd/constant/radindegr.hpp>
-#include <boost/simd/function/minus.hpp>
 #include <boost/simd/function/multiplies.hpp>
-#include <boost/simd/function/indeg.hpp>
+#include <boost/simd/function/fms.hpp>
 #include <boost/simd/detail/dispatch/function/overload.hpp>
 #include <boost/config.hpp>
 
@@ -30,10 +29,10 @@ namespace boost { namespace simd { namespace ext
                           , bd::generic_< bd::floating_<A0> >
                           )
   {
-    using result_t = A0;
     A0 operator() ( A0 const& a0) const
     {
-      return (a0*Radindeg<result_t>())-(a0*Radindegr<result_t>());
+      A0 z = a0*Radindegr<A0>();
+      return fms(a0, Radindeg<A0>(), z);
     }
   };
 } } }
