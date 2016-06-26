@@ -23,6 +23,10 @@
 #include <boost/simd/detail/dispatch/function/overload.hpp>
 #include <boost/config.hpp>
 #include <cmath>
+#include <boost/simd/function/scalar/dec.hpp>
+#include <boost/simd/function/scalar/log.hpp>
+#include <boost/simd/constant/half.hpp>
+#include <boost/simd/function/fast.hpp>
 
 namespace boost { namespace simd { namespace ext
 {
@@ -58,6 +62,22 @@ namespace boost { namespace simd { namespace ext
       return std::atanh(a0);
     }
   };
+
+
+   BOOST_DISPATCH_OVERLOAD( atanh_
+                          , (typename A0)
+                          , bd::cpu_
+                          , bs::fast_tag
+                          , bd::scalar_<bd::floating_<A0>>
+                          )
+   {
+      BOOST_FORCEINLINE A0 operator()(const fast_tag&, A0 a0) const BOOST_NOEXCEPT
+      {
+        A0 absa0 = bs::abs(a0);
+        return bitwise_xor(bitofsign(a0), Half<A0>()*log1p((absa0+absa0)/oneminus(absa0)));
+      }
+   };
+
 } } }
 
 

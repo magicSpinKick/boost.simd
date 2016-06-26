@@ -277,7 +277,7 @@ namespace boost { namespace simd {
             std::cout << std::scientific << std::setprecision(9)
                       << "in range [" << minin[i] << ", "<< maxin[i] << "]" << "."
                       << " Example: "<< minin[i] << " returns " << minval[i]
-                      << " instead of " << minref[i];
+                      << " instead of " <<  reference_f(minin[i]);
           std::cout << std::endl;
         }
       }
@@ -290,7 +290,7 @@ namespace boost { namespace simd {
         std::cout << std::scientific << std::setprecision(9)
                   << "in range [" << minin[M+1] << ", "<< maxin[M+1] << "]" << "."
                   << " Example: "<< minin[M+1] << " returns " << minval[M+1]
-                  << " instead of " << minref[M+1]
+                  << " instead of " << reference_f(minin[M+1])
                   << std::endl;
       }
     }

@@ -19,9 +19,9 @@ DEFINE_SCALAR_BENCH(std_scalar_atan, bs::std_(boost::simd::atan));
 
 int main(int argc, char** argv) {
   nsb::parse_args(argc, argv);
-  nsb::for_each<simd_atan, NS_BENCH_IEEE_TYPES>(-10, 10);
-  nsb::for_each<scalar_atan, NS_BENCH_IEEE_TYPES>(-10, 10);
-  nsb::for_each<std_scalar_atan, NS_BENCH_IEEE_TYPES>(-10, 10);
+  nsb::for_each<simd_atan, NS_BENCH_IEEE_TYPES>(-10000, 10000);
+  nsb::for_each<scalar_atan, NS_BENCH_IEEE_TYPES>(-10000, 10000);
+  nsb::for_each<std_scalar_atan, NS_BENCH_IEEE_TYPES>(-10000, 10000);
   print_results();
   return 0;
 }

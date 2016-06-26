@@ -7,19 +7,19 @@
 // -------------------------------------------------------------------------------------------------
 
 #include <simd_bench.hpp>
-#include <boost/simd/function/simd/acotd.hpp>
+#include <boost/simd/function/simd/acoth.hpp>
 #include <boost/simd/pack.hpp>
 #include <cmath>
 
 namespace nsb = ns::bench;
 namespace bs =  boost::simd;
-DEFINE_SIMD_BENCH(simd_acotd, boost::simd::acotd);
-DEFINE_SCALAR_BENCH(scalar_acotd, boost::simd::acotd);
+DEFINE_SIMD_BENCH(simd_acoth, boost::simd::acoth);
+DEFINE_SCALAR_BENCH(scalar_acoth, boost::simd::acoth);
 
 int main(int argc, char** argv) {
   nsb::parse_args(argc, argv);
-  nsb::for_each<simd_acotd, NS_BENCH_IEEE_TYPES>(-10000, 10000);
-  nsb::for_each<scalar_acotd, NS_BENCH_IEEE_TYPES>(-10000, 10000);
+  nsb::for_each<simd_acoth, NS_BENCH_IEEE_TYPES>(-10000, -1);
+  nsb::for_each<scalar_acoth, NS_BENCH_IEEE_TYPES>(-10000, -1);
   print_results();
   return 0;
 }

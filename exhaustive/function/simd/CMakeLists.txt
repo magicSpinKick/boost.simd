@@ -11,21 +11,29 @@ set(SOURCES
   acos.cpp
   acosd.cpp
   acospi.cpp
-
+  acot.cpp
+  acotd.cpp
+  acoth.cpp
+  acotpi.cpp
+  atan.cpp
+  atanh.cpp
 ##  asin.cpp
 ##  atan.cpp
 ##  exp.cpp
 ##  exp10.cpp
 ##  exp2.cpp
 ##  expm1.cpp
-##  fast_acos.cpp
-##  fast_acosd.cpp
+  fast_acos.cpp
+  fast_acosd.cpp
+  fast_acospi.cpp
+  fast_atanh.cpp
 ##  log.cpp
 ##  log1p.cpp
 ##  log10.cpp
 ##  log2.cpp
 ##  std_acos.cpp
- )
+  std_acos.cpp
+)
 
 make_exhaustive("function.simd" ${SOURCES})
 

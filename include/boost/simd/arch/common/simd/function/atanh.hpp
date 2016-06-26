@@ -27,6 +27,11 @@
 #include <boost/simd/function/simd/oneminus.hpp>
 #include <boost/simd/function/simd/plus.hpp>
 
+#include <boost/simd/function/simd/inc.hpp>
+#include <boost/simd/function/simd/log.hpp>
+#include <boost/simd/constant/half.hpp>
+#include <boost/simd/function/fast.hpp>
+
 namespace boost { namespace simd { namespace ext
 {
    namespace bd = boost::dispatch;
@@ -45,6 +50,20 @@ namespace boost { namespace simd { namespace ext
         auto test =  is_less(absa0, Half<A0>());
         A0 tmp = if_else(test, absa0, t)/z1;
         return bitwise_xor(bitofsign(a0), Half<A0>()*log1p(if_else(test, fma(t,tmp,t), tmp)));
+      }
+   };
+
+   BOOST_DISPATCH_OVERLOAD( atanh_
+                          , (typename A0, typename X)
+                          , bd::cpu_
+                          , bs::fast_tag
+                          , bs::pack_<bd::floating_<A0>, X>
+                          )
+   {
+      BOOST_FORCEINLINE A0 operator()(const fast_tag&, const A0& a0) const BOOST_NOEXCEPT
+      {
+        A0 absa0 = bs::abs(a0);
+        return bitwise_xor(bitofsign(a0), Half<A0>()*log1p((absa0+absa0)/oneminus(absa0)));
       }
    };
 
