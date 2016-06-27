@@ -15,11 +15,13 @@ namespace nsb = ns::bench;
 namespace bs =  boost::simd;
 DEFINE_SIMD_BENCH(simd_asind, boost::simd::asind);
 DEFINE_SCALAR_BENCH(scalar_asind, boost::simd::asind);
+DEFINE_SCALAR_BENCH(std_scalar_asind, bs::std_(boost::simd::asind));
 
 int main(int argc, char** argv) {
   nsb::parse_args(argc, argv);
   nsb::for_each<simd_asind, NS_BENCH_IEEE_TYPES>(-1, 1);
   nsb::for_each<scalar_asind, NS_BENCH_IEEE_TYPES>(-1, 1);
+  nsb::for_each<std_scalar_asind, NS_BENCH_IEEE_TYPES>(-1, 1);
   print_results();
   return 0;
 }
