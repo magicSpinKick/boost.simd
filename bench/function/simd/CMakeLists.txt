@@ -64,7 +64,7 @@ set(SOURCES
 ##conj.cpp
 ##copysign.cpp
 ##correct_fma.cpp
-##cos.cpp
+cos.cpp
 ##cosd.cpp
 ##cospi.cpp
 ##cot.cpp
@@ -230,7 +230,7 @@ plus.cpp
 ##predecessor.cpp
 ##prev.cpp
 ##rec.cpp
-##rem.cpp
+rem.cpp
 ##rem_pio2_cephes.cpp
 ##rem_pio2.cpp
 ##rem_pio2_medium.cpp
@@ -260,7 +260,7 @@ plus.cpp
 ##significants.cpp
 ##signnz.cpp
 ##sinc.cpp
-##sincos.cpp
+sincos.cpp
 ##sincosd.cpp
 ##sincospi.cpp
 ##sincpi.cpp
@@ -296,7 +296,6 @@ plus.cpp
 ##unary_minus.cpp
 ##unary_minus_s.cpp
 ##unary_plus.cpp
->>>>>>> all any arg asind asinpi
 )
 
 make_bench("function.simd" ${SOURCES})

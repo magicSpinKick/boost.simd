@@ -20,12 +20,13 @@ DEFINE_SCALAR_BENCH(saturated_scalar_abs, bs::saturated_(boost::simd::abs));
 DEFINE_SIMD_BENCH(std_simd_abs, bs::std_(boost::simd::abs));
 DEFINE_SCALAR_BENCH(std_scalar_abs, bs::std_(boost::simd::abs));
 
-int main(int argc, char** argv) {
-  nsb::parse_args(argc, argv);
+DEFINE_BENCH_MAIN()
+{
   nsb::for_each<simd_abs, NS_BENCH_SIGNED_NUMERIC_TYPES>(-10, 10);
   nsb::for_each<simd_abs, NS_BENCH_UNSIGNED_NUMERIC_TYPES>(0, 10);
   nsb::for_each<scalar_abs, NS_BENCH_SIGNED_NUMERIC_TYPES>(-10, 10);
   nsb::for_each<scalar_abs, NS_BENCH_UNSIGNED_NUMERIC_TYPES>(0, 10);
+
   nsb::for_each<saturated_simd_abs, NS_BENCH_SIGNED_NUMERIC_TYPES>(-10, 10);
   nsb::for_each<saturated_simd_abs, NS_BENCH_UNSIGNED_NUMERIC_TYPES>(0, 10);
   nsb::for_each<saturated_scalar_abs, NS_BENCH_SIGNED_NUMERIC_TYPES>(-10, 10);
@@ -35,7 +36,4 @@ int main(int argc, char** argv) {
   nsb::for_each<std_simd_abs, NS_BENCH_UNSIGNED_NUMERIC_TYPES>(0, 10);
   nsb::for_each<std_scalar_abs, NS_BENCH_SIGNED_NUMERIC_TYPES>(-10, 10);
   nsb::for_each<std_scalar_abs, NS_BENCH_UNSIGNED_NUMERIC_TYPES>(0, 10);
-  print_results();
-  return 0;
-
 }
