@@ -7,20 +7,20 @@
 // -------------------------------------------------------------------------------------------------
 
 #include <simd_bench.hpp>
-#include <boost/simd/function/simd/log.hpp>
+#include <boost/simd/function/simd/atanh.hpp>
 #include <boost/simd/pack.hpp>
 #include <cmath>
 
 namespace nsb = ns::bench;
 namespace bs = boost::simd;
 
-DEFINE_SCALAR_BENCH(scalar_log, boost::simd::log);
-DEFINE_SIMD_BENCH(simd_log, boost::simd::log);
-DEFINE_SIMD_BENCH(std_scalar_log, bs::std_(boost::simd::log));
+DEFINE_SIMD_BENCH(fast_simd_atanh, bs::fast_(bs::atanh));
 
 DEFINE_BENCH_MAIN()
 {
-  nsb::for_each<simd_log, NS_BENCH_IEEE_TYPES>(0, 10000);
-  nsb::for_each<scalar_log, NS_BENCH_IEEE_TYPES>(0, 10000);
-  nsb::for_each<std_scalar_log, NS_BENCH_IEEE_TYPES>(0, 10000);
+  nsb::for_each<fast_simd_atanh, NS_BENCH_IEEE_TYPES>(-10,10);
+  nsb::for_each<fast_simd_atanh, NS_BENCH_IEEE_TYPES>(-10,10);
+  nsb::for_each<fast_simd_atanh, NS_BENCH_IEEE_TYPES>(-10,10);
+  nsb::for_each<fast_simd_atanh, NS_BENCH_IEEE_TYPES>(-10,10);
+
 }

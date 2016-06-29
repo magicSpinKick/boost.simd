@@ -39,7 +39,7 @@ namespace boost { namespace simd { namespace ext
    BOOST_DISPATCH_OVERLOAD( atanh_
                           , (typename A0, typename X)
                           , bd::cpu_
-                          , bs::pack_<bd::floating_<A0>, X>
+                          , bs::pack_<bd::single_<A0>, X>
                           )
    {
       BOOST_FORCEINLINE A0 operator()( const A0& a0) const BOOST_NOEXCEPT
@@ -54,6 +54,18 @@ namespace boost { namespace simd { namespace ext
    };
 
    BOOST_DISPATCH_OVERLOAD( atanh_
+                          , (typename A0, typename X)
+                          , bd::cpu_
+                          , bs::pack_<bd::double_<A0>, X>
+                          )
+   {
+      BOOST_FORCEINLINE A0 operator()( const A0& a0) const BOOST_NOEXCEPT
+      {
+        return { bs::atanh(a0[0]), bs::atanh(a0[1])};
+      }
+   };
+
+  BOOST_DISPATCH_OVERLOAD( atanh_
                           , (typename A0, typename X)
                           , bd::cpu_
                           , bs::fast_tag

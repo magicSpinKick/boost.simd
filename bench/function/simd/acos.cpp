@@ -18,12 +18,10 @@ DEFINE_SCALAR_BENCH(scalar_acos, boost::simd::acos);
 DEFINE_SCALAR_BENCH(std_scalar_acos, bs::std_(boost::simd::acos));
 DEFINE_SIMD_BENCH(fast_simd_acos, bs::fast_(boost::simd::acos));
 
-int main(int argc, char** argv) {
-  nsb::parse_args(argc, argv);
+DEFINE_BENCH_MAIN()
+{
   nsb::for_each<simd_acos, NS_BENCH_IEEE_TYPES>(-1, 1);
   nsb::for_each<scalar_acos, NS_BENCH_IEEE_TYPES>(-1, 1);
   nsb::for_each<std_scalar_acos, NS_BENCH_IEEE_TYPES>(-1, 1);
   nsb::for_each<fast_simd_acos, NS_BENCH_IEEE_TYPES>(-1, 1);
-  print_results();
-  return 0;
 }

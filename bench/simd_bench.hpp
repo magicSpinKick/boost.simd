@@ -36,8 +36,8 @@ ns::bench::setup setup()
 {
   namespace nsb = ns::bench;
   return nsb::setup()
-    .median(nsb::units::cpe_)
-    .really_during(2.)
+    .min(nsb::units::cpe_).iteration(20000)
+//    .really_during(1.)
     ;
 }
 
@@ -122,14 +122,13 @@ struct bench_experiment : ns::bench::experiment
   }
 };
 
-void describe()
+void init(int argc, char** argv)
 {
-  std::cout << ":: --------------------------------------------------------------------------------------------------------------------------------------------------";
-  std::cout << std::endl;
+  nsb::parse_args(argc, argv);
   std::cout << ":: Compiler: " << BOOST_COMPILER << std::endl;
   std::cout << ":: Platform: " << BOOST_PLATFORM << std::endl;
   std::cout << ":: SIMD:     " << nsb::type_id<BOOST_SIMD_DEFAULT_SITE>() << std::endl;
-  std::cout << ":: --------------------------------------------------------------------------------------------------------------------------------------------------";
+  std::cout << ":: -------------------------------------------------------------------------------";
   std::cout << std::endl;
 }
 
@@ -168,9 +167,8 @@ using scalar_experiment =
   void main2();                                                                                    \
   int main(int argc, char** argv)                                                                  \
   {                                                                                                \
-    nsb::parse_args(argc, argv);                                                                   \
+    init(argc, argv);                                                                              \
     main2();                                                                                       \
-    describe();                                                                                    \
     print_results();                                                                               \
     return 0;                                                                                      \
   }                                                                                                \

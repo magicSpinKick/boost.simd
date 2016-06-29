@@ -44,9 +44,9 @@ namespace boost { namespace simd { namespace ext
       A0 t =  absa0+absa0;
       A0 z1 = oneminus(absa0);
       return bitwise_xor(bitofsign(a0),
-                         Half<A0>()*log1p((absa0 < Half<A0>())
-                                          ? fma(t, absa0/z1, t)
-                                          : t/z1)
+                         Half<A0>()*bs::log1p((absa0 < Half<A0>())
+                                              ? fma(t, absa0/z1, t)
+                                              : t/z1)
                         );
     }
   };
@@ -74,7 +74,7 @@ namespace boost { namespace simd { namespace ext
       BOOST_FORCEINLINE A0 operator()(const fast_tag&, A0 a0) const BOOST_NOEXCEPT
       {
         A0 absa0 = bs::abs(a0);
-        return bitwise_xor(bitofsign(a0), Half<A0>()*log1p((absa0+absa0)/oneminus(absa0)));
+        return bitwise_xor(bitofsign(a0), Half<A0>()*bs::log1p((absa0+absa0)/oneminus(absa0)));
       }
    };
 
