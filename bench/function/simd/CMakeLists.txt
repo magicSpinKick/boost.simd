@@ -299,6 +299,7 @@ set(SOURCES
     sc_atanh.cpp
     std_atanh.cpp
     fast_simd_atanh.cpp
+    slp.cpp
 )
 
 make_bench("function.simd" ${SOURCES})
