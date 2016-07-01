@@ -14,6 +14,9 @@
 namespace nsb = ns::bench;
 namespace bs = boost::simd;
 
+#define LIST float
+//#define LIST double
+//#define LIST NS_BENCH_IEEE_TYPES
 DEFINE_SIMD_BENCH(simd_atanh, boost::simd::atanh);
 // DEFINE_SCALAR_BENCH(scalar_atanh, boost::simd::atanh);
 // DEFINE_SIMD_BENCH(std_scalar_atanh, bs::std_(boost::simd::atanh));
@@ -22,13 +25,13 @@ DEFINE_SIMD_BENCH(simd_atanh, boost::simd::atanh);
 
 DEFINE_BENCH_MAIN()
 {
-  nsb::for_each<simd_atanh, NS_BENCH_IEEE_TYPES>(-10,10);
-  nsb::for_each<simd_atanh, NS_BENCH_IEEE_TYPES>(-10,10);
-  nsb::for_each<simd_atanh, NS_BENCH_IEEE_TYPES>(-10,10);
-  nsb::for_each<simd_atanh, NS_BENCH_IEEE_TYPES>(-10,10);
- //  nsb::for_each<scalar_atanh, NS_BENCH_IEEE_TYPES>(-10,10);
-//   nsb::for_each<std_scalar_atanh, NS_BENCH_IEEE_TYPES>(-10,10);
-//   nsb::for_each<fast_simd_atanh, NS_BENCH_IEEE_TYPES>(-10,10);
-//   nsb::for_each<fast_scalar_atanh, NS_BENCH_IEEE_TYPES>(-10,10);
+  nsb::for_each<simd_atanh, LIST>(0.5,10.0);
+  nsb::for_each<simd_atanh, LIST>(0.5,10.0);
+  nsb::for_each<simd_atanh, LIST>(0.5,10.0);
+  nsb::for_each<simd_atanh, LIST>(0.5,10.00);
+ //  nsb::for_each<scalar_atanh, LIST>(1,10);
+//   nsb::for_each<std_scalar_atanh, LIST>(1,10);
+//   nsb::for_each<fast_simd_atanh, LIST>(1,10);
+//   nsb::for_each<fast_scalar_atanh, LIST>(1,10);
 
 }

@@ -60,24 +60,6 @@ namespace detail
 {
     template <class... T>
     struct map_impl;
-    template <class K, class... T>
-    struct map_inserter_impl
-    {
-        using index_type = typename K::first_type;
-        using map_type = map_impl<T...>;
-        using find_result = lookup<map_type, index_type>;
-        using type = decltype(map_type::template insert_impl<K>(find_result{}));
-    };
-    template <class... T>
-    struct map_inserter
-    {
-        template <class K, typename U>
-        static map_impl<T...> insert_impl(U);
-        template <class K>
-        static map_impl<T..., K> insert_impl(no_such_type_);
-        template <class K>
-        static typename map_inserter_impl<K, T...>::type insert(type_<K>);
-    };
     template <>
     struct map_impl<>
     {
@@ -87,7 +69,7 @@ namespace detail
         static map_impl<K> insert(type_<K>);
     };
     template <class... Ts>
-    struct map_impl : map_inserter<Ts...>
+    struct map_impl
     {
     private:
         struct Pack : pair<typename Ts::first_type, Ts>... {};
@@ -98,6 +80,10 @@ namespace detail
         static decltype(at_impl<K>(static_cast<Pack*>(nullptr))) at(type_<K>);
         template<class K>
         static type_<no_such_type_> at(K);
+        template <class P, class = decltype(static_cast<pair<typename P::first_type, P>*>(static_cast<Pack*>(nullptr)))>
+        static map_impl insert(type_<P>);
+        template <class P>
+        static map_impl<Ts..., typename P::type> insert(P);
     };
     template<class... Ts>
     struct make_map : type_<typename Ts::first_type>... {
@@ -213,7 +199,7 @@ namespace brigand
 }
 namespace brigand
 {
-	template<typename... T> struct has_placeholders : std::false_type {};
+  template<typename... T> struct has_placeholders : std::false_type {};
   template<typename T> struct has_placeholders<T> : is_placeholder<T> {};
   template<template<class...>class T,typename... Ts>
   struct has_placeholders<T<Ts...>> : has_placeholders<Ts...> {};
@@ -326,71 +312,27 @@ namespace brigand
 }
 namespace brigand
 {
-  namespace detail
-  {
-    template<typename Lambda, typename Args> struct apply;
-    template<typename Lambda, template<class...> class List, typename... Args>
-    struct apply < Lambda, List<Args...> >
+template <template <typename...> class F>
+struct call
+{
+};
+namespace detail
+{
+    template <typename Lambda, typename Args>
+    struct apply;
+    template <typename Lambda, template <class...> class List, typename... Args>
+    struct apply<Lambda, List<Args...>>
     {
-      using type = typename Lambda::template apply<Args...>::type;
+        using type = typename Lambda::template apply<Args...>::type;
     };
-  }
-  template<typename Lambda, typename... Args>
-  using apply = typename detail::apply<lambda<Lambda>,brigand::list<Args...>>::type;
-}
-namespace brigand
-{
-  namespace detail
-  {
-  template <typename Functor, typename Sequence>
-  struct unary_transform_impl;
-    template< typename Functor
-            , template<class...> class Sequence, typename... T
-            >
-  struct unary_transform_impl<Functor, Sequence<T...>>
+    template <template<typename...> class Lambda, template <class...> class List, typename... Args>
+    struct apply<lambda<call<Lambda>>, List<Args...>>
     {
-      using type = Sequence< brigand::apply<Functor,T>... >;
+        using type = Lambda<Args...>;
     };
-  template<typename Functor, typename Sequence1, typename Sequence2>
-  struct binary_transform_impl;
-    template< typename Functor
-            , template<class...> class Sequence1, typename... T1
-            , template<class...> class Sequence2, typename... T2
-            >
-  struct binary_transform_impl<Functor, Sequence1<T1...>, Sequence2<T2...>>
-    {
-      static_assert ( sizeof...(T1) == sizeof...(T2)
-                    , "The arguments of transform should be of the same size"
-                    );
-      using type = Sequence1< brigand::apply<Functor,T1,T2>... >;
-  };
-  template <std::size_t Selector, typename Sequence1, typename Functor, typename Sequence2 = void>
-  struct transform_selector;
-  template <typename Sequence1, typename Functor>
-  struct transform_selector <0, Sequence1, Functor, void>
-  {
-    using type = typename unary_transform_impl<Functor, Sequence1>::type;
-  };
-  template <typename Sequence1, typename Sequence2, typename Functor>
-  struct transform_selector<1, Sequence1, Sequence2, Functor>
-  {
-    using type = typename binary_transform_impl<Functor, Sequence1, Sequence2>::type;
-  };
-  }
-namespace lazy
-{
-    template<typename Sequence1, typename OpSeq1, typename... OpSeq2>
-    using transform = typename detail::transform_selector<sizeof...(OpSeq2), Sequence1, OpSeq1, OpSeq2...>;
 }
-  template<typename Sequence1, typename OpSeq1, typename... OpSeq2>
-  using transform = typename detail::transform_selector<sizeof...(OpSeq2), Sequence1, OpSeq1, OpSeq2...>::type;
-}
-namespace brigand
-{
-    template <typename T>
-    struct make_integral : std::integral_constant <typename T::value_type, T::value> {};
-    template <typename L>
-    using as_integral_list = transform<L, make_integral<brigand::_1>>;
+template <typename Lambda, typename... Args>
+using apply = typename detail::apply<lambda<Lambda>, brigand::list<Args...>>::type;
 }
 namespace brigand
 {
@@ -405,6 +347,237 @@ namespace brigand
   }
   template<class A, template<class...> class B>
   using wrap = typename detail::wrap_impl<A, B>::type;
+}
+#include <type_traits>
+namespace brigand
+{
+  template<class... T>
+  using count = std::integral_constant<std::size_t, sizeof...(T)>;
+}
+namespace brigand
+{
+  template<class L> using size = wrap<L, count>;
+}
+namespace brigand
+{
+  namespace detail
+  {
+    template<class L, class... T> struct push_front_impl;
+    template<template<class...> class L, class... U, class... T>
+    struct push_front_impl<L<U...>, T...>
+    {
+      using type = L<T..., U...>;
+    };
+  }
+  template<class L, class... T>
+  using push_front = typename detail::push_front_impl<L, T...>::type;
+  namespace detail
+  {
+    template<class L> struct front_impl;
+    template<template<class...> class L, class T, class... U>
+    struct front_impl<L<T, U...>>
+    {
+      using type = T;
+    };
+  }
+  template <class L>
+  using front = typename detail::front_impl<L>::type;
+  namespace detail
+  {
+    template <class L, std::size_t N> struct pop_front_impl;
+    template<template<class...> class L, class T, class... U>
+    struct pop_front_impl<L<T, U...>, 1>
+    {
+      using type = L<U...>;
+    };
+    template<template<class...> class L, class> struct pop_front_element;
+    template<template<class...> class L, class... Ts>
+    struct pop_front_element<L, list<Ts...>>
+    {
+      template<class... Us>
+      static L<Us...> impl(Ts..., type_<Us>*...);
+    };
+    template<template<class...> class L, class... Ts, std::size_t N>
+    struct pop_front_impl<L<Ts...>, N>
+    {
+      using type = decltype(pop_front_element<L, filled_list<
+        void const *, N
+      >>::impl(static_cast<type_<Ts>*>(nullptr)...));
+    };
+  }
+  template <class L, class N = std::integral_constant<std::size_t, 1>>
+  using pop_front = typename detail::pop_front_impl<L, N::value>::type;
+}
+#include <type_traits>
+namespace brigand
+{
+namespace detail
+{
+  template<class L>
+  struct clear_impl;
+  template<template<class...> class L, class... Ts>
+  struct clear_impl<L<Ts...>>
+  {
+    using type = L<>;
+  };
+}
+  template<class L>
+  using clear = typename detail::clear_impl<L>::type;
+}
+namespace brigand
+{
+namespace detail
+{
+    template <bool b, typename O, typename L, std::size_t I>
+    struct split_at_impl;
+    template <template <typename...> class S, typename... Os, typename T, typename... Ts>
+    struct split_at_impl<false, S<Os...>, S<T, Ts...>, 0>
+    {
+        using type = S<S<Os...>, S<T, Ts...>>;
+    };
+    template <template <typename...> class S, typename... Os, typename... Ts>
+    struct split_at_impl<false, S<Os...>, S<Ts...>, 0>
+    {
+        using type = S<S<Os...>, S<Ts...>>;
+    };
+    template <template <typename...> class S, typename... Os, typename T, typename... Ts,
+              std::size_t I>
+    struct split_at_impl<false, S<Os...>, S<T, Ts...>, I>
+        : split_at_impl<false, S<Os..., T>, S<Ts...>, (I - 1)>
+    {
+    };
+    template <template <typename...> class S, typename... Os, typename T1, typename T2, typename T3,
+              typename T4, typename T5, typename T6, typename T7, typename T8, typename T9,
+              typename T10, typename T11, typename T12, typename T13, typename T14, typename T15,
+              typename T16, typename... Ts, std::size_t I>
+    struct split_at_impl<
+        true, S<Os...>,
+        S<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, Ts...>, I>
+        : split_at_impl<((I - 16) > 16), S<Os..., T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12,
+                                           T13, T14, T15, T16>,
+                        S<Ts...>, (I - 16)>
+    {
+    };
+    template <typename L, typename I>
+    struct call_split_at_impl : split_at_impl<(I::value > 16), brigand::clear<L>, L, I::value>
+    {
+    };
+}
+namespace lazy
+{
+    template <typename L, typename I>
+    using split_at = ::brigand::detail::call_split_at_impl<L, I>;
+}
+template <typename L, typename I>
+using split_at = typename ::brigand::lazy::split_at<L, I>::type;
+}
+namespace brigand
+{
+  namespace detail
+  {
+    template<class L, class... T> struct push_back_impl;
+    template<template<class...> class L, class... U, class... T>
+    struct push_back_impl<L<U...>, T...>
+    {
+        using type = L<U..., T...>;
+    };
+  }
+  template<class L, class... T>
+  using push_back = typename detail::push_back_impl<L, T...>::type;
+  template <class L>
+  using back = at_c<L, size<L>::value-1>;
+  template <class L, class N = std::integral_constant<std::size_t, 1>>
+  using pop_back = front<split_at<L, std::integral_constant<std::size_t, size<L>::value - N::value>>>;
+}
+namespace brigand
+{
+  namespace detail
+  {
+    template<class L1, class L2>
+    struct rot90;
+    template<
+      class... L1,
+      template<class...> class S1, class... T1,
+      template<class...> class S2, class... T2,
+      template<class...> class S3, class... T3,
+      template<class...> class S4, class... T4,
+      template<class...> class S5, class... T5,
+      template<class...> class S6, class... T6,
+      template<class...> class S7, class... T7,
+      template<class...> class S8, class... T8,
+      class... L2>
+    struct rot90<list<L1...>, list<
+      S1<T1...>, S2<T2...>, S3<T3...>, S4<T4...>,
+      S5<T5...>, S6<T6...>, S7<T7...>, S8<T8...>, L2...>>
+    : rot90<list<push_back<L1, T1, T2, T3, T4, T5, T6, T7, T8>...>, list<L2...>>
+    {};
+    template<class... L1, template<class...> class S, class... T, class... L2>
+    struct rot90<list<L1...>, list<S<T...>, L2...>>
+    : rot90<list<push_back<L1, T>...>, list<L2...>>
+    {};
+    template<class L1>
+    struct rot90<L1, list<>>
+    {
+      using type = L1;
+    };
+    template<class Func, class Seq1, class Seq2, class Seqs>
+    struct transform_impl;
+    template<class F, class T1, class T2, class Seq>
+    struct transform_apply;
+    template<class F, class T1, class T2, class... Ts>
+    struct transform_apply<F, T1, T2, list<Ts...>>
+    {
+      using type = brigand::apply<F, T1, T2, Ts...>;
+    };
+    template<
+      class Func,
+      template<class...> class Seq1, class... T1,
+      template<class...> class Seq2, class... T2,
+      class... Seqs>
+    struct transform_impl<Func, Seq1<T1...>, Seq2<T2...>, list<Seqs...>>
+    {
+      using type = Seq1<typename transform_apply<Func, T1, T2, Seqs>::type...>;
+    };
+    template<std::size_t n, class Seq1, class Seq2, class... FuncOrSeqs>
+    struct transform_selector
+    : transform_impl<at_c<list<FuncOrSeqs...>, n-1>, Seq1, Seq2,
+      typename rot90<filled_list<list<>, size<Seq1>::value>, pop_back<list<FuncOrSeqs...>>>::type>
+    {};
+    template<template<class...> class Seq, class... T, class Func>
+    struct transform_selector<0, Seq<T...>, Func>
+    {
+      using type = Seq<brigand::apply<Func, T>...>;
+    };
+  template<template<class...> class Seq, class... T, template<typename...> class Func>
+  struct transform_selector<0, Seq<T...>, call<Func>>
+  {
+    using type = Seq<Func<T>...>;
+  };
+    template<template<class...> class Seq1, class... T1, template<class...> class Seq2, class... T2, class Func>
+    struct transform_selector<1, Seq1<T1...>, Seq2<T2...>, Func>
+    {
+      using type = Seq1<brigand::apply<Func, T1, T2>...>;
+    };
+  template<template<class...> class Seq1, class... T1, template<class...> class Seq2, class... T2, template<typename...> class Func>
+  struct transform_selector<1, Seq1<T1...>, Seq2<T2...>, call<Func>>
+  {
+    using type = Seq1<Func<T1, T2>...>;
+  };
+  }
+  namespace lazy
+  {
+    template<typename Sequence1, typename OpSeq1, typename... OpSeq2>
+    using transform = typename detail::transform_selector<sizeof...(OpSeq2), Sequence1, OpSeq1, OpSeq2...>;
+  }
+  template<typename Sequence1, typename OpSeq1, typename... OpSeq2>
+  using transform = typename detail::transform_selector<sizeof...(OpSeq2), Sequence1, OpSeq1, OpSeq2...>::type;
+}
+namespace brigand
+{
+    template <typename T>
+    struct make_integral : std::integral_constant <typename T::value_type, T::value> {};
+    template <typename L>
+    using as_integral_list = transform<L, make_integral<brigand::_1>>;
 }
 namespace brigand
 {
@@ -533,12 +706,6 @@ namespace brigand
   }
   template<typename Sequence, typename Predicate = detail::non_null>
   using any = typename detail::any_impl<Sequence,Predicate>::type;
-}
-#include <type_traits>
-namespace brigand
-{
-  template<class... T>
-  using count = std::integral_constant<std::size_t, sizeof...(T)>;
 }
 namespace brigand
 {
@@ -682,10 +849,6 @@ namespace lazy
 }
 namespace brigand
 {
-  template<class L> using size = wrap<L, count>;
-}
-namespace brigand
-{
 namespace lazy
 {
     template <typename Sequence, typename Predicate = brigand::detail::non_null>
@@ -788,7 +951,7 @@ namespace brigand { namespace detail
   struct fold_impl<Functor, State, Sequence<T0, T1, T2, T3>>
   {
       using type = brigand::apply<Functor,
-          brigand::apply<Functor, 
+          brigand::apply<Functor,
               brigand::apply<Functor,
                   brigand::apply<Functor, State, T0>, T1
               >, T2
@@ -977,21 +1140,37 @@ template <class Sequence, typename T>
 using index_of = index_if<Sequence, std::is_same<T, ::brigand::_1>>;
 }
 #include <type_traits>
+#ifdef _MSC_VER
+#define BRIGAND_COMP_MSVC
+#endif
+#ifdef __GNUC__
+#ifndef __clang__
+#define BRIGAND_COMP_GCC
+#else
+#define BRIGAND_COMP_CLANG
+#endif
+#endif
 namespace brigand
 {
   namespace detail
   {
     template<class T, class, class, T>
     struct range_cat;
+#ifdef BRIGAND_COMP_MSVC
     template<class T, T Start, T Int>
     struct int_plus
     {
       using type = std::integral_constant<T, Start + Int>;
     };
+#endif
     template<class T, class... Ts, T... Ints, T Start>
     struct range_cat<T, list<Ts...>, list<std::integral_constant<T, Ints>...>, Start>
     {
+#ifdef BRIGAND_COMP_MSVC
       using type = list<Ts..., typename int_plus<T, Start, Ints>::type...>;
+#else
+      using type = list<Ts..., std::integral_constant<T, Start + Ints>...>;
+#endif
     };
     template<class T, T Start, std::size_t N>
     struct range_impl
@@ -1014,15 +1193,21 @@ namespace brigand
     };
     template<class T, class, class, T>
     struct reverse_range_cat;
+#ifdef BRIGAND_COMP_MSVC
     template<class T, T Start, T Int>
     struct int_minus
     {
       using type = std::integral_constant<T, Int - Start>;
     };
+#endif
     template<class T, class... Ts, T... Ints, T Start>
     struct reverse_range_cat<T, list<Ts...>, list<std::integral_constant<T, Ints>...>, Start>
     {
+#ifdef BRIGAND_COMP_MSVC
       using type = list<Ts..., typename int_minus<T, Start, Ints>::type...>;
+#else
+      using type = list<Ts..., std::integral_constant<T, Ints - Start>...>;
+#endif
     };
     template<class T, T Start, std::size_t N>
     struct reverse_range_impl
@@ -1090,22 +1275,6 @@ namespace brigand
   struct has_placeholders<protect<T>>
   : std::false_type
   {};
-}
-#include <type_traits>
-namespace brigand
-{
-namespace detail
-{
-  template<class L>
-  struct clear_impl;
-  template<template<class...> class L, class... Ts>
-  struct clear_impl<L<Ts...>>
-  {
-    using type = L<>;
-  };
-}
-  template<class L>
-  using clear = typename detail::clear_impl<L>::type;
 }
 #include <type_traits>
 namespace brigand
@@ -1255,53 +1424,6 @@ namespace lazy
 }
 template<typename TList, typename TDelim>
 using split = typename lazy::split<TList, TDelim>::type;
-}
-namespace brigand
-{
-namespace detail
-{
-    template <bool b, typename O, typename L, std::size_t I>
-    struct split_at_impl;
-    template <template <typename...> class S, typename... Os, typename T, typename... Ts>
-    struct split_at_impl<false, S<Os...>, S<T, Ts...>, 0>
-    {
-        using type = S<S<Os...>, S<T, Ts...>>;
-    };
-    template <template <typename...> class S, typename... Os, typename... Ts>
-    struct split_at_impl<false, S<Os...>, S<Ts...>, 0>
-    {
-        using type = S<S<Os...>, S<Ts...>>;
-    };
-    template <template <typename...> class S, typename... Os, typename T, typename... Ts,
-              std::size_t I>
-    struct split_at_impl<false, S<Os...>, S<T, Ts...>, I>
-        : split_at_impl<false, S<Os..., T>, S<Ts...>, (I - 1)>
-    {
-    };
-    template <template <typename...> class S, typename... Os, typename T1, typename T2, typename T3,
-              typename T4, typename T5, typename T6, typename T7, typename T8, typename T9,
-              typename T10, typename T11, typename T12, typename T13, typename T14, typename T15,
-              typename T16, typename... Ts, std::size_t I>
-    struct split_at_impl<
-        true, S<Os...>,
-        S<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, Ts...>, I>
-        : split_at_impl<((I - 16) > 16), S<Os..., T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12,
-                                           T13, T14, T15, T16>,
-                        S<Ts...>, (I - 16)>
-    {
-    };
-    template <typename L, typename I>
-    struct call_split_at_impl : split_at_impl<(I::value > 16), brigand::clear<L>, L, I::value>
-    {
-    };
-}
-namespace lazy
-{
-    template <typename L, typename I>
-    using split_at = ::brigand::detail::call_split_at_impl<L, I>;
-}
-template <typename L, typename I>
-using split_at = typename ::brigand::lazy::split_at<L, I>::type;
 }
 namespace brigand
 {
@@ -1750,89 +1872,6 @@ namespace brigand
 }
 namespace brigand
 {
-  namespace detail
-  {
-    template<class L, class... T> struct push_front_impl;
-    template<template<class...> class L, class... U, class... T>
-    struct push_front_impl<L<U...>, T...>
-    {
-      using type = L<T..., U...>;
-    };
-  }
-  template<class L, class... T>
-  using push_front = typename detail::push_front_impl<L, T...>::type;
-  namespace detail
-  {
-    template<class L> struct front_impl;
-    template<template<class...> class L, class T, class... U>
-    struct front_impl<L<T, U...>>
-    {
-      using type = T;
-    };
-  }
-  template <class L>
-  using front = typename detail::front_impl<L>::type;
-  namespace detail
-  {
-    template <class L, std::size_t N> struct pop_front_impl;
-    template<template<class...> class L, class T, class... U>
-    struct pop_front_impl<L<T, U...>, 1>
-    {
-      using type = L<U...>;
-    };
-    template<template<class...> class L, class> struct pop_front_element;
-    template<template<class...> class L, class... Ts>
-    struct pop_front_element<L, list<Ts...>>
-    {
-      template<class... Us>
-      static L<Us...> impl(Ts..., type_<Us>*...);
-    };
-    template<template<class...> class L, class... Ts, std::size_t N>
-    struct pop_front_impl<L<Ts...>, N>
-    {
-      using type = decltype(pop_front_element<L, filled_list<
-        void const *, N
-      >>::impl(static_cast<type_<Ts>*>(nullptr)...));
-    };
-  }
-  template <class L, class N = std::integral_constant<std::size_t, 1>>
-  using pop_front = typename detail::pop_front_impl<L, N::value>::type;
-}
-namespace brigand
-{
-  namespace detail
-  {
-    template<class L, class... T> struct push_back_impl;
-    template<template<class...> class L, class... U, class... T>
-    struct push_back_impl<L<U...>, T...>
-    {
-        using type = L<U..., T...>;
-    };
-  }
-  template<class L, class... T>
-  using push_back = typename detail::push_back_impl<L, T...>::type;
-  template <class L>
-  using back = at_c<L, size<L>::value-1>;
-  template <class L, class N = std::integral_constant<std::size_t, 1>>
-  using pop_back = front<split_at<L, std::integral_constant<std::size_t, size<L>::value - N::value>>>;
-}
-namespace brigand
-{
-namespace detail
-{
-    template <template <class...> class L, class First, class... R>
-    struct without_last_element
-    {
-        using type = append<L<First>, typename without_last_element<L, R...>::type>;
-    };
-    template <template <class...> class L, class Last>
-    struct without_last_element<L, Last>
-    {
-      using type = L<>;
-    };
-} }
-namespace brigand
-{
 namespace detail
 {
     template<class Start, unsigned N, class Next, class... E>
@@ -1892,108 +1931,6 @@ namespace brigand
     >;
 namespace detail
 {
-    template <class... U>
-    struct exact_eraser;
-    template <>
-    struct exact_eraser<>
-    {
-        template <typename K>
-        static exact_eraser<> erase(type_<K>);
-    };
-    template <class U0>
-    struct exact_eraser<U0>
-    {
-        static exact_eraser<> erase(type_<U0>);
-        template <typename K>
-        static exact_eraser<U0> erase(type_<K>);
-    };
-    template <class U0, class... U>
-    struct exact_eraser<U0, U...>
-    {
-        static exact_eraser<U...> erase(type_<U0>);
-        template <typename K>
-        using recursive_exact_erase = decltype(exact_eraser<U...>::erase(type_<K>{}));
-        template <typename K>
-        static append<exact_eraser<U0>, recursive_exact_erase<K>> erase(type_<K>);
-    };
-    template <class U0, class U1, class... U>
-    struct exact_eraser<U0, U1, U...>
-    {
-        static exact_eraser<U1, U...> erase(type_<U0>);
-        static exact_eraser<U0, U...> erase(type_<U1>);
-        template <typename K>
-        using recursive_exact_erase = decltype(exact_eraser<U...>::erase(type_<K>{}));
-        template <typename K>
-        static append<exact_eraser<U0, U1>, recursive_exact_erase<K>> erase(type_<K>);
-    };
-    template <class U0, class U1, class U2, class... U>
-    struct exact_eraser<U0, U1, U2, U...>
-    {
-        static exact_eraser<U1, U2, U...> erase(type_<U0>);
-        static exact_eraser<U0, U2, U...> erase(type_<U1>);
-        static exact_eraser<U0, U1, U...> erase(type_<U2>);
-        template <typename K>
-        using recursive_exact_erase = decltype(exact_eraser<U...>::erase(type_<K>{}));
-        template <typename K>
-        static append<exact_eraser<U0, U1, U2>, recursive_exact_erase<K>> erase(type_<K>);
-    };
-    template <class U0, class U1, class U2, class U3, class... U>
-    struct exact_eraser<U0, U1, U2, U3, U...>
-    {
-        static exact_eraser<U1, U2, U3, U...> erase(type_<U0>);
-        static exact_eraser<U0, U2, U3, U...> erase(type_<U1>);
-        static exact_eraser<U0, U1, U3, U...> erase(type_<U2>);
-        static exact_eraser<U0, U1, U2, U...> erase(type_<U3>);
-        template <typename K>
-        using recursive_exact_erase = decltype(exact_eraser<U...>::erase(type_<K>{}));
-        template <typename K>
-        static append<exact_eraser<U0, U1, U2, U3>, recursive_exact_erase<K>> erase(type_<K>);
-    };
-    template <class U0, class U1, class U2, class U3, class U4, class... U>
-    struct exact_eraser<U0, U1, U2, U3, U4, U...>
-    {
-        static exact_eraser<U1, U2, U3, U4, U...> erase(type_<U0>);
-        static exact_eraser<U0, U2, U3, U4, U...> erase(type_<U1>);
-        static exact_eraser<U0, U1, U3, U4, U...> erase(type_<U2>);
-        static exact_eraser<U0, U1, U2, U4, U...> erase(type_<U3>);
-        static exact_eraser<U0, U1, U2, U3, U...> erase(type_<U4>);
-        template <typename K>
-        using recursive_exact_erase = decltype(exact_eraser<U...>::erase(type_<K>{}));
-        template <typename K>
-        static append<exact_eraser<U0, U1, U2, U3, U4>, recursive_exact_erase<K>> erase(type_<K>);
-    };
-}
-namespace detail
-{
-    template< class L1, template<class> class Pred, class L2 >
-    struct erase_if_impl;
-    template< class L1, template<class> class Pred, class L2, bool >
-    struct erase_if_shortcut;
-    template< template<class...> class L1, class T, class... Ts,
-            template<class> class Pred,
-            template<class...> class L2, class... Us >
-    struct erase_if_shortcut<L1<T, Ts...>, Pred, L2<Us...>, true>
-    {
-        using type = L2<Us..., Ts...>;
-    };
-    template< template<class...> class L1, class T, class... Ts,
-            template<class> class Pred,
-            template<class...> class L2, class... Us >
-    struct erase_if_shortcut<L1<T, Ts...>, Pred, L2<Us...>, false>
-    : erase_if_impl<L1<Ts...>, Pred, L2<Us..., T>>
-    {};
-    template< template<class...> class L1, class T, class... Ts,
-            template<class> class Pred, class L2 >
-    struct erase_if_impl<L1<T, Ts...>, Pred, L2>
-    : erase_if_shortcut<L1<T, Ts...>, Pred, L2, bool(Pred<T>::value)>
-    {};
-    template< template<class...> class L1,
-            template<class> class Pred,
-            class L2 >
-    struct erase_if_impl<L1<>, Pred, L2>
-    {
-        using type = L2;
-    };
     template <typename T>
     struct has_erase_method
     {
@@ -2052,38 +1989,31 @@ namespace detail
     struct make_set;
     template<class U, class K>
     struct set_erase_pred_impl
-    : std::conditional<std::is_same<U, K>::value, list<>, list<U>>
     {
+        using type = list<U>;
+    };
+    template<class K>
+    struct set_erase_pred_impl<K,K>
+    {
+        using type = list<>;
     };
     template <class... T>
     struct set_impl
     {
-        template <typename U, typename = decltype(static_cast<type_<U>>(make_set<T...>()))>
-        static std::true_type contains(type_<U>);
-        template <typename U>
-        static std::false_type contains(U);
-    private:
-        template <class K>
-        struct contains_predicate_impl
-        {
-            using type = decltype(set_impl<T...>::contains(K{}));
-        };
+        template <typename K, typename = decltype(static_cast<type_<K>*>(static_cast<make_set<T...>*>(nullptr)))>
+        static std::true_type contains(type_<K>);
         template <typename K>
-        using contains_predicate = typename contains_predicate_impl<K>::type;
-    public:
-        template <typename U>
-        static contains_predicate<type_<U>> has_key(type_<U>);
-    public:
+        static std::false_type contains(K);
+        template <typename K, typename = decltype(static_cast<type_<K>*>(static_cast<make_set<T...>*>(nullptr)))>
+        static std::true_type has_key(type_<K>);
+        template <typename K>
+        static std::false_type has_key(K);
         template <class K>
         static append<set_impl<>, typename set_erase_pred_impl<T, K>::type...> erase(type_<K>);
-    private:
+        template<class K, class = decltype(static_cast<type_<K>*>(static_cast<make_set<T...>*>(nullptr)))>
+        static set_impl insert(type_<K>);
         template<class K>
-        static set_impl<T..., K> insert_impl(std::false_type);
-        template<class K>
-        static set_impl insert_impl(std::true_type);
-    public:
-        template<class K>
-        static decltype(set_impl<T...>::insert_impl<K>(contains_predicate<type_<K>>())) insert(type_<K>);
+        static set_impl<T..., typename K::type> insert(K);
     };
     template<class... Ts>
     struct make_set : type_<Ts>...

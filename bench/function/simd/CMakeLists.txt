@@ -7,9 +7,9 @@
 ## -------------------------------------------------------------------------------------------------
 
 set(SOURCES
-#    abs.cpp
+    abs.cpp
 #    abs_s.cpp
-#    acos.cpp
+    acos.cpp
 #    acosd.cpp
 #    acospi.cpp
 #    acot.cpp
@@ -76,7 +76,9 @@ set(SOURCES
 #    deinterleave_second.cpp
 #    dist.cpp
 #    dist_s.cpp
-#    divides.cpp
+    div.cpp
+    divfix.cpp
+    divides.cpp
 #    divides_s.cpp
 #    dot.cpp
 #    enumerate.cpp
@@ -229,7 +231,7 @@ set(SOURCES
 #    predecessor.cpp
 #    prev.cpp
 #    rec.cpp
-#    rem.cpp
+    rem.cpp
 #    rem_pio2_cephes.cpp
 #    rem_pio2.cpp
 #    rem_pio2_medium.cpp

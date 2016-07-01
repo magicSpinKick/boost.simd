@@ -13,14 +13,16 @@
 
 namespace nsb = ns::bench;
 namespace bs = boost::simd;
-
+#define LIST float
+//#define LIST double
+//#define LIST NS_BENCH_IEEE_TYPES
 DEFINE_SCALAR_BENCH(scalar_atanh, bs::atanh);
 
 DEFINE_BENCH_MAIN()
 {
-  nsb::for_each<scalar_atanh, NS_BENCH_IEEE_TYPES>(-10,10);
-  nsb::for_each<scalar_atanh, NS_BENCH_IEEE_TYPES>(-10,10);
-  nsb::for_each<scalar_atanh, NS_BENCH_IEEE_TYPES>(-10,10);
-  nsb::for_each<scalar_atanh, NS_BENCH_IEEE_TYPES>(-10,10);
+  nsb::for_each<scalar_atanh, LIST>(0.5,10.0);
+  nsb::for_each<scalar_atanh, LIST>(0.5,10.0);
+  nsb::for_each<scalar_atanh, LIST>(0.5,10.0);
+  nsb::for_each<scalar_atanh, LIST>(0.5,10.0);
 
 }

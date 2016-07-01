@@ -36,8 +36,13 @@ ns::bench::setup setup()
 {
   namespace nsb = ns::bench;
   return nsb::setup()
-    .min(nsb::units::cpe_).iteration(20000)
-//    .really_during(1.)
+//    .median(nsb::units::time_ms_)
+    .min(nsb::units::cpe_)
+//    .min(nsb::units::time_ms_)
+//     .max(nsb::units::cpe_)
+//     .mean(nsb::units::cpe_)
+//    .iteration(50000)
+    .really_during(1.)
     ;
 }
 
@@ -122,13 +127,13 @@ struct bench_experiment : ns::bench::experiment
   }
 };
 
-void init(int argc, char** argv)
+void describe()
 {
-  nsb::parse_args(argc, argv);
+  std::cout << ":: --------------------------------------------------------------------------------------------------------------------------------------------------"<< std::endl;
   std::cout << ":: Compiler: " << BOOST_COMPILER << std::endl;
   std::cout << ":: Platform: " << BOOST_PLATFORM << std::endl;
   std::cout << ":: SIMD:     " << nsb::type_id<BOOST_SIMD_DEFAULT_SITE>() << std::endl;
-  std::cout << ":: -------------------------------------------------------------------------------";
+  std::cout << ":: --------------------------------------------------------------------------------------------------------------------------------------------------";
   std::cout << std::endl;
 }
 
@@ -167,8 +172,9 @@ using scalar_experiment =
   void main2();                                                                                    \
   int main(int argc, char** argv)                                                                  \
   {                                                                                                \
-    init(argc, argv);                                                                              \
+    nsb::parse_args(argc, argv);                                                                   \
     main2();                                                                                       \
+    describe();                                                                                    \
     print_results();                                                                               \
     return 0;                                                                                      \
   }                                                                                                \

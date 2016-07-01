@@ -7,22 +7,19 @@
 // -------------------------------------------------------------------------------------------------
 
 #include <simd_bench.hpp>
-#include <boost/simd/function/simd/log1p.hpp>
+#include <boost/simd/function/simd/div.hpp>
 #include <boost/simd/pack.hpp>
 #include <cmath>
 
 namespace nsb = ns::bench;
-namespace bs = boost::simd;
-#define LIST float
-//#define LIST double
-//#define LIST NS_BENCH_IEEE_TYPES
-DEFINE_SCALAR_BENCH(scalar_log1p, boost::simd::log1p);
-DEFINE_SIMD_BENCH(simd_log1p, boost::simd::log1p);
-DEFINE_SIMD_BENCH(std_scalar_log1p, bs::std_(boost::simd::log1p));
+
+DEFINE_SIMD_BENCH(si_div, boost::simd::div);
+DEFINE_SCALAR_BENCH(sc_div, boost::simd::div);
 
 DEFINE_BENCH_MAIN()
 {
-  nsb::for_each<simd_log1p, LIST>(-1, 10000);
-  nsb::for_each<scalar_log1p, LIST>(-1, 10000);
-  nsb::for_each<std_scalar_log1p, LIST>(-1, 10000);
+  nsb::for_each<si_div, NS_BENCH_IEEE_TYPES>(-10, 10, -10, 10);
+  nsb::for_each<si_div, NS_BENCH_IEEE_TYPES>(0, 10,  0,  10);
+  nsb::for_each<sc_div, NS_BENCH_IEEE_TYPES>(-10, 10, -10, 10);
+  nsb::for_each<sc_div, NS_BENCH_IEEE_TYPES>(0, 10,  0,  10);
 }
