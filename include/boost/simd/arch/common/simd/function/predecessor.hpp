@@ -43,7 +43,7 @@ namespace boost { namespace simd { namespace ext
    {
       BOOST_FORCEINLINE A0 operator()( const A0& a0) const BOOST_NOEXCEPT
       {
-        return if_plus(neq(a0, Valmin<A0>()), a0, Mone<A0>());
+        return if_plus(is_not_equal(a0, Valmin<A0>()), a0, Mone<A0>());
       }
    };
 
