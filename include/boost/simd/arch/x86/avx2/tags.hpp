@@ -35,8 +35,8 @@ namespace boost { namespace simd
     static bool detect()
     {
       #if BOOST_ARCH_X86
-      return      detect_feature( 5, 0x00000001, detail::ebx)
-              &&  detect_feature(27, 0x00000001, detail::ecx);
+      return      detect_features( (1<< 5)|(1<< 3)|(1<< 8), 0x00000007, detail::ebx)
+              &&  detect_features( (1<<27)|(1<<22)|(1<<12), 0x00000001, detail::ecx);
       #else
       return false;
       #endif
