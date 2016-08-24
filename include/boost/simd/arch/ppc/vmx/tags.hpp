@@ -12,12 +12,16 @@
 #define BOOST_SIMD_ARCH_PPC_VMX_TAGS_HPP_INCLUDED
 
 #include <boost/simd/arch/common/tags.hpp>
+#include <boost/predef/architecture.h>
+#include <boost/predef/os.h>
 
-#if BOOST_OS_LINUX
-#include <boost/simd/sdk/config/details/detector/linux_auxv.hpp>
-#include <asm/cputable.h>
-#elif BOOST_OS_MACOS
-#include <Gestalt.h>
+#if BOOST_ARCH_PPC
+  #if BOOST_OS_MACOS
+    #include <Gestalt.h>
+  #else
+    #include <boost/simd/detail/auxv.hpp>
+    #include <asm/cputable.h>
+  #endif
 #endif
 
 namespace boost { namespace simd
@@ -39,9 +43,7 @@ namespace boost { namespace simd
     static bool detect()
     {
       #if BOOST_ARCH_PPC
-        #if BOOST_OS_LINUX
-          return detail::hwcap() & PPC_FEATURE_HAS_ALTIVEC;
-        #elif BOOST_OS_MACOS
+        #if BOOST_OS_MACOS
           long cpuAttributes;
           bool hasAltiVec = false;
           OSErr err = Gestalt( gestaltPowerPCProcessorFeatures, &cpuAttributes );
@@ -51,7 +53,7 @@ namespace boost { namespace simd
           }
           return hasAltiVec;
         #else
-          return false;
+          return detail::hwcap() & PPC_FEATURE_HAS_ALTIVEC;
         #endif
       #else
         return false;

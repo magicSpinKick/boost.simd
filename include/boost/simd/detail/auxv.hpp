@@ -9,17 +9,15 @@
 #ifndef BOOST_SIMD_DETAIL_AUXV_HPP_INCLUDED
 #define BOOST_SIMD_DETAIL_AUXV_HPP_INCLUDED
 
-#include <boost/predef/os.hpp>
-
-#if BOOST_OS_LINUX
-#include <linux/auxvec.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <boost/predef/os.h>
 #include <boost/cstdint.hpp>
+#include <linux/auxvec.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 namespace boost { namespace simd { namespace detail
 {
-  inline std::uintptr_t auxv(std::uintptr_t type)
+  inline uintptr_t auxv(uintptr_t type)
   {
     int fd;
     uintptr_t auxv[2];
@@ -42,7 +40,5 @@ namespace boost { namespace simd { namespace detail
 
   inline unsigned int hwcap() { return auxv(AT_HWCAP); }
 } } }
-
-#endif
 
 #endif
